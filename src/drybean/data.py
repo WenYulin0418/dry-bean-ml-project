@@ -13,6 +13,21 @@ class DatasetSplits:
     test: pd.DataFrame
 
 
+def coerce_numeric_features(
+    frame: pd.DataFrame,
+    feature_columns,
+) -> pd.DataFrame:
+    result = frame.copy()
+    numeric_pattern = r"([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)"
+    for column in feature_columns:
+        extracted = result[column].astype("string").str.extract(
+            numeric_pattern,
+            expand=False,
+        )
+        result[column] = pd.to_numeric(extracted, errors="coerce")
+    return result
+
+
 def _read_split(filename: str) -> pd.DataFrame:
     path = PATHS.data_dir / filename
     if not path.exists():
@@ -21,6 +36,7 @@ def _read_split(filename: str) -> pd.DataFrame:
     expected = [*RAW_FEATURES, TARGET]
     if frame.columns.tolist() != expected:
         raise ValueError(f"{filename} 列结构不符合预期")
+    frame = coerce_numeric_features(frame, RAW_FEATURES)
     frame[TARGET] = clean_label_series(frame[TARGET])
     return frame
 
@@ -49,4 +65,3 @@ def profile_frame(frame: pd.DataFrame) -> dict:
         ),
         "numeric_summary": frame.select_dtypes("number").describe().to_dict(),
     }
-

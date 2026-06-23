@@ -2,9 +2,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+*.egg-info/
 artifacts/models/
 artifacts/paper_render/
 .streamlit/
 .superpowers/
 ~$*
-
