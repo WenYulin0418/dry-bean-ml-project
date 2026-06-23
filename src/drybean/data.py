@@ -24,7 +24,10 @@ def coerce_numeric_features(
             numeric_pattern,
             expand=False,
         )
-        result[column] = pd.to_numeric(extracted, errors="coerce")
+        result[column] = pd.to_numeric(
+            extracted,
+            errors="coerce",
+        ).astype("float64")
     return result
 
 

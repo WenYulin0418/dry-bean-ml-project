@@ -3,8 +3,14 @@ __pycache__/
 .pytest_cache/
 .venv/
 *.egg-info/
+.vscode/
 artifacts/models/
 artifacts/paper_render/
+artifacts/screenshots/desktop_current.png
 .streamlit/
 .superpowers/
+docs/superpowers/
 ~$*
+*.bak
+*.tmp
+*.pptx

@@ -29,4 +29,6 @@ def test_coerce_numeric_features_handles_sentinels_and_units():
 
     assert pd.isna(result.loc[0, "Solidity"])
     assert result.loc[0, "Compactness"] == 0.76
+    assert str(result["Solidity"].dtype) == "float64"
+    assert str(result["Compactness"].dtype) == "float64"
     assert frame.loc[0, "Compactness"] == "0.7600 cm"
