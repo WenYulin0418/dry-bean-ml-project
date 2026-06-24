@@ -90,9 +90,13 @@
 
 60 组实验中，XGBoost 的平均 Accuracy 下降约 **0.11 个百分点**，随机森林约 **0.21 个百分点**，KNN 约 0.69 个百分点，逻辑回归约 0.93 个百分点，手写高斯朴素贝叶斯约 1.10 个百分点。树集成方法（XGBoost、随机森林）在本数据上鲁棒性明显优于其他模型。
 
-| 高斯噪声 | 标签噪声 |
+| 高斯噪声 | 脉冲噪声 |
 |---|---|
-| ![高斯噪声](artifacts/figures/robustness_gaussian_monotonic.png) | ![标签噪声](artifacts/figures/robustness_label_monotonic.png) |
+| ![高斯噪声](artifacts/figures/robustness_gaussian_monotonic.png) | ![脉冲噪声](artifacts/figures/robustness_impulse_monotonic.png) |
+
+| 缺失噪声 | 标签噪声 |
+|---|---|
+| ![缺失噪声](artifacts/figures/robustness_missing_monotonic.png) | ![标签噪声](artifacts/figures/robustness_label_monotonic.png) |
 
 ## 过拟合与特征消融
 
