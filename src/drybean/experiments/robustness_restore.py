@@ -48,9 +48,11 @@ def run_robustness_experiment() -> pd.DataFrame:
         clean_processor = TabularPreprocessor(scale=spec.scale)
         clean_x_train = clean_processor.fit_transform(raw_x_train)
         clean_x_test = clean_processor.transform(raw_x_test)
+
+        clean_estimator = build_model_specs()[model_key].estimator
         clean_model = fit_robust_model(
             model_key,
-            build_model_specs()[model_key].estimator,
+            clean_estimator,
             clean_x_train,
             y_train,
             len(encoder.classes_),
@@ -81,14 +83,13 @@ def run_robustness_experiment() -> pd.DataFrame:
                     noisy_x,
                     columns=raw_x_train.columns,
                 )
-                processor = TabularPreprocessor(scale=spec.scale)
-                processed_train = processor.fit_transform(noisy_frame)
-                processed_test = processor.transform(raw_x_test)
-                model = build_model_specs()[model_key].estimator
+                processed_train = clean_processor.transform(noisy_frame)
+                processed_test = clean_x_test
+                estimator = build_model_specs()[model_key].estimator
                 started = perf_counter()
                 model = fit_robust_model(
                     model_key,
-                    model,
+                    estimator,
                     processed_train,
                     noisy_y,
                     len(encoder.classes_),
@@ -116,4 +117,3 @@ def run_robustness_experiment() -> pd.DataFrame:
     result = pd.DataFrame(rows)
     result.to_csv(PATHS.results / "robustness.csv", index=False)
     return result
-

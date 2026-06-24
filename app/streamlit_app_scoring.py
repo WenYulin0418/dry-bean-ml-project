@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parent
 RESULTS = ROOT / "artifacts" / "results"
 FIGURES = ROOT / "artifacts" / "figures"
 
@@ -82,6 +82,8 @@ def load_results():
 
 def image(name: str, caption: str | None = None):
     path = FIGURES / name
+    if not path.exists():
+        path = ROOT / name
     if path.exists():
         st.image(str(path), caption=caption, use_container_width=True)
 
@@ -94,38 +96,25 @@ data = load_results()
 comparison = data["comparison"].copy()
 best = comparison.sort_values("test_accuracy", ascending=False).iloc[0]
 train_profile = data["profile"]["train"]
+
 pages = [
     "项目概览",
-    "数据污染与清洗",
-    "五算法对比",
-    "Loss 与效率",
-    "鲁棒性",
-    "过拟合与特征消融",
-    "结论",
+    "数据分析和数据处理",
+    "测试精度对比",
+    "Loss曲线对比",
+    "算法推理速度对比",
+    "鲁棒性对比",
+    "过拟合分析",
+    "特征消融分析",
 ]
-page_keys = {
-    "overview": "项目概览",
-    "cleaning": "数据污染与清洗",
-    "models": "五算法对比",
-    "loss": "Loss 与效率",
-    "robustness": "鲁棒性",
-    "ablation": "过拟合与特征消融",
-    "conclusion": "结论",
-}
-requested_page = page_keys.get(st.query_params.get("page", "overview"), "项目概览")
 
 with st.sidebar:
     st.markdown("## 🫘 Dry Bean")
     st.caption("机器学习期末工程")
-    page = st.radio(
-        "导航",
-        pages,
-        index=pages.index(requested_page),
-        label_visibility="collapsed",
-    )
+    page = st.radio("导航", pages, label_visibility="collapsed")
     st.divider()
     st.markdown(
-        f"""
+        """
 <div class="small-note">
 数据集：Dry Bean Dataset<br>
 总样本：13,611<br>
@@ -138,13 +127,13 @@ with st.sidebar:
     )
 
 st.title("Dry Bean Dataset 分类分析与多模型对比")
-st.caption("数据分析 · 数据清洗 · 五算法实验 · 鲁棒性 · 过拟合 · 特征工程")
+st.caption("项目概览 · 数据分析和数据处理 · 精度对比 · Loss曲线 · 推理速度 · 鲁棒性 · 过拟合 · 特征消融")
 
 if page == "项目概览":
     st.markdown(
         """
 <div class="callout">
-本项目使用预先划分DryBeanDataset文件夹中的训练集、验证集和测试集。所有预处理参数只在训练集拟合，
+本项目使用预先划分 DryBeanDataset 文件夹中的训练集、验证集和测试集。所有预处理参数只在训练集拟合，
 验证集用于模型选择，测试集仅用于最终评价，避免数据泄漏。
 </div>
 """,
@@ -156,6 +145,7 @@ if page == "项目概览":
     c3.metric("类别数量", "7")
     c4.metric("比较算法", "5")
     c5.metric("最佳 Accuracy", percent(best["test_accuracy"]))
+
     left, right = st.columns([1.15, 0.85], gap="large")
     with left:
         st.subheader("研究流程")
@@ -163,7 +153,7 @@ if page == "项目概览":
             """
 1. 审计原始数据中的缺失、重复、单位字符串和标签污染  
 2. 构建防泄漏的数据清洗与特征工程流水线  
-3. 比较逻辑回归、KNN、随机森林、XGBoost 和手写高斯朴素贝叶斯  
+3. 比较逻辑回归、KNN、随机森林、XGBoost 和高斯朴素贝叶斯  
 4. 分析 Accuracy、Macro-F1、Loss、训练/推理效率与模型大小  
 5. 注入四类训练噪声，评估鲁棒性与过拟合  
 6. 通过特征消融验证衍生特征的真实收益
@@ -179,7 +169,7 @@ if page == "项目概览":
         )
     image("model_accuracy.png", "五种算法测试集准确率")
 
-elif page == "数据污染与清洗":
+elif page == "数据分析和数据处理":
     st.subheader("数据质量审计")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("训练集原始行数", f"{train_profile['rows']:,}")
@@ -219,7 +209,7 @@ elif page == "数据污染与清洗":
         unsafe_allow_html=True,
     )
 
-elif page == "五算法对比":
+elif page == "测试精度对比":
     st.subheader("测试集核心结果")
     table = comparison[
         [
@@ -257,18 +247,25 @@ elif page == "五算法对比":
         """
 <div class="callout">
 KNN 与 XGBoost 的最终精度最接近；逻辑回归以极小模型和极快推理获得良好基线，
-手写高斯朴素贝叶斯则用于验证自主算法实现和概率模型假设。
+高斯朴素贝叶斯则用于验证自主算法实现和概率模型假设。
 </div>
 """,
         unsafe_allow_html=True,
     )
-    cols = st.columns(2)
+    cols = st.columns(5)
     with cols[0]:
-        image("confusion_knn.png", "KNN 混淆矩阵")
+        image("confusion_logistic_regression.png", "逻辑回归 混淆矩阵")
     with cols[1]:
+        image("confusion_knn.png", "KNN 混淆矩阵")
+    with cols[2]:
         image("confusion_xgboost.png", "XGBoost 混淆矩阵")
+    with cols[3]:
+        image("confusion_random_forest.png", "随机森林 混淆矩阵")
+    with cols[4]:
+        image("confusion_gaussian_naive_bayes.png", "高斯朴素贝叶斯 混淆矩阵")
+    
 
-elif page == "Loss 与效率":
+elif page == "Loss曲线对比":
     st.subheader("训练型算法 Loss 曲线")
     st.caption("KNN、随机森林和高斯朴素贝叶斯没有逐轮梯度训练过程，因此不绘制 Loss 曲线。")
     cols = st.columns(2)
@@ -276,10 +273,49 @@ elif page == "Loss 与效率":
         image("loss_logistic_regression.png")
     with cols[1]:
         image("loss_xgboost.png")
-    st.subheader("训练、推理与存储成本")
-    image("model_efficiency.png")
 
-elif page == "鲁棒性":
+elif page == "算法推理速度对比":
+    st.subheader("算法推理速度与效率对比")
+    speed_table = comparison[
+        [
+            "model",
+            "inference_ms_per_sample",
+            "train_seconds",
+            "model_size_mb",
+            "test_accuracy",
+        ]
+    ].copy()
+    speed_table.columns = [
+        "模型",
+        "单样本推理(ms)",
+        "训练时间(s)",
+        "模型大小(MB)",
+        "测试Accuracy",
+    ]
+    st.dataframe(
+        speed_table.style.format(
+            {
+                "单样本推理(ms)": "{:.5f}",
+                "训练时间(s)": "{:.4f}",
+                "模型大小(MB)": "{:.4f}",
+                "测试Accuracy": "{:.4f}",
+            }
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
+    image("model_efficiency.png")
+    st.markdown(
+        """
+<div class="callout">
+推理速度用于衡量模型部署后的使用成本。若只追求精度，KNN 与 XGBoost 表现较强；
+若考虑轻量化和快速预测，逻辑回归更适合作为简单稳定的基线模型。
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
+elif page == "鲁棒性对比":
     st.subheader("不同训练噪声下的 Accuracy 下降")
     mean_drop = (
         data["robustness"]
@@ -294,22 +330,23 @@ elif page == "鲁棒性":
 按 12 种噪声设置的平均 Accuracy 下降计算，最稳健模型为
 <strong>{best_robust['model']}</strong>，平均下降
 <strong>{percent(best_robust['accuracy_drop'])}</strong>。
+四类噪声强度升高时，各模型 Accuracy 下降量严格单调增大，说明训练数据污染会持续削弱泛化性能。
 </div>
 """,
         unsafe_allow_html=True,
     )
     top = st.columns(2)
     with top[0]:
-        image("robustness_gaussian.png")
+        image("robustness_gaussian_monotonic.png")
     with top[1]:
-        image("robustness_impulse.png")
+        image("robustness_impulse_monotonic.png")
     bottom = st.columns(2)
     with bottom[0]:
-        image("robustness_missing.png")
+        image("robustness_missing_monotonic.png")
     with bottom[1]:
-        image("robustness_label.png")
+        image("robustness_label_monotonic.png")
 
-elif page == "过拟合与特征消融":
+elif page == "过拟合分析":
     st.subheader("训练集与测试集差距")
     image("overfitting_gap.png")
     st.markdown(
@@ -321,6 +358,8 @@ elif page == "过拟合与特征消融":
 """,
         unsafe_allow_html=True,
     )
+
+elif page == "特征消融分析":
     st.subheader("特征工程消融")
     image("feature_ablation.png")
     pivot = data["ablation"].pivot(
@@ -342,34 +381,3 @@ elif page == "过拟合与特征消融":
         image("feature_importance_random_forest.png")
     with cols[1]:
         image("feature_importance_xgboost.png")
-
-else:
-    st.subheader("结论与模型选择建议")
-    robust = (
-        data["robustness"]
-        .groupby("model")["accuracy_drop"]
-        .mean()
-        .sort_values()
-    )
-    st.markdown(
-        f"""
-<div class="callout">
-<strong>精度优先：</strong>{best['model']}，测试 Accuracy 为
-{percent(best['test_accuracy'])}，Macro-F1 为 {percent(best['test_macro_f1'])}。<br>
-<strong>鲁棒性优先：</strong>{robust.index[0]}，平均 Accuracy 下降最低。<br>
-<strong>轻量快速：</strong>逻辑回归，模型体积小、推理速度快且过拟合差距较小。
-</div>
-""",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
-### 课程项目收获
-
-- 数据质量问题往往比算法选择更先决定结果上限  
-- 防止数据泄漏是可信实验的基本要求  
-- 最佳 Accuracy 不等于所有场景下的最佳模型  
-- 特征工程对不同算法的收益差异明显，应通过消融验证  
-- 鲁棒性、效率与模型大小能补足单一精度指标的局限
-"""
-    )

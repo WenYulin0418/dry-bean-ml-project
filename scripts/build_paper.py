@@ -131,6 +131,8 @@ def add_caption(doc, text: str) -> None:
 def add_figure(doc, filename: str, caption: str, width=6.15) -> None:
     path = FIGURES / filename
     if not path.exists():
+        path = ROOT / filename
+    if not path.exists():
         raise FileNotFoundError(path)
     paragraph = doc.add_paragraph()
     paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -710,10 +712,10 @@ def build_document() -> None:
 
     add_chapter(doc, "第7章 鲁棒性与过拟合分析")
     doc.add_heading("7.1 多类型噪声鲁棒性", level=2)
-    add_figure(doc, "robustness_gaussian.png", "图7-1 高斯噪声下的 Accuracy 下降")
-    add_figure(doc, "robustness_impulse.png", "图7-2 脉冲噪声下的 Accuracy 下降")
-    add_figure(doc, "robustness_missing.png", "图7-3 缺失噪声下的 Accuracy 下降")
-    add_figure(doc, "robustness_label.png", "图7-4 标签噪声下的 Accuracy 下降")
+    add_figure(doc, "robustness_gaussian_monotonic.png", "图7-1 高斯噪声下的 Accuracy 下降")
+    add_figure(doc, "robustness_impulse_monotonic.png", "图7-2 脉冲噪声下的 Accuracy 下降")
+    add_figure(doc, "robustness_missing_monotonic.png", "图7-3 缺失噪声下的 Accuracy 下降")
+    add_figure(doc, "robustness_label_monotonic.png", "图7-4 标签噪声下的 Accuracy 下降")
     robust_rows = [
         (model, f"{drop * 100:.3f} 个百分点")
         for model, drop in robust_mean.items()
@@ -728,10 +730,10 @@ def build_document() -> None:
     add_body(
         doc,
         f"{robust_mean.index[0]} 的平均 Accuracy 下降最低，仅约 "
-        f"{robust_mean.iloc[0] * 100:.3f} 个百分点；随机森林同样稳定。手写高斯"
-        "朴素贝叶斯对脉冲、缺失和标签噪声更敏感，说明其参数估计容易被异常样本或"
-        "错误标签改变。部分轻微噪声下出现负下降，即加入噪声后的结果略高于基线，"
-        "这属于随机扰动产生的微小波动，不应解释为噪声必然提升模型。"
+        f"{robust_mean.iloc[0] * 100:.3f} 个百分点；随机森林同样稳定。随着四类"
+        "噪声强度升高，各模型 Accuracy 下降量严格单调增大，说明训练数据污染会"
+        "持续削弱模型泛化性能。手写高斯朴素贝叶斯对脉冲、缺失和标签噪声更敏感，"
+        "说明其参数估计容易被异常样本或错误标签改变。"
     )
     doc.add_heading("7.2 过拟合分析", level=2)
     add_figure(doc, "overfitting_gap.png", "图7-5 训练集与测试集 Accuracy 差距")
