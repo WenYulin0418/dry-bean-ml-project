@@ -1,6 +1,6 @@
 # Dry Bean Dataset 多分类机器学习项目
 
-基于教师提供的脏训练集、验证集和测试集，完成“数据分析—数据清洗—特征工程—五算法实验—鲁棒性分析—系统展示—课程论文”的全流程项目。当前测试集最佳结果为 **KNN Accuracy 92.69%、Macro-F1 93.80%**，XGBoost 以 92.62% Accuracy 紧随其后。
+基于Dry Bean Dataset的训练集、验证集和测试集，完成“数据分析—数据清洗—特征工程—五算法实验—鲁棒性分析—系统展示—课程论文”的全流程项目。当前测试集最佳结果为 **KNN Accuracy 92.69%、Macro-F1 93.80%**，XGBoost 以 92.62% Accuracy 紧随其后。
 
 ![模型准确率对比](artifacts/figures/model_accuracy.png)
 
